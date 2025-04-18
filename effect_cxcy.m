@@ -28,8 +28,10 @@ end
 
 
 %% 验证dx dy的影响
-dx_rand = randi([0, 1000]); % 随机生成dx，范围0-100,要求是integer
-dy_rand = randi([0, 1000]); % 随机生成dy，范围0-100
+% dx_rand = randi([0, 1000]); % 随机生成dx，范围0-100,要求是integer
+% dy_rand = randi([0, 1000]); % 随机生成dy，范围0-100
+dx_rand = 0; % 随机生成dx，范围0-100,要求是integer
+dy_rand = 0; % 随机生成dy，范围0-100
 
 fprintf('随机生成的dx: %d, dy: %d\n', dx_rand, dy_rand); % 修改格式化输出为整数
 
