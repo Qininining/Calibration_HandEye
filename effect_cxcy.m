@@ -28,22 +28,18 @@ end
 
 
 %% 验证dx dy的影响
-dx_rand = randi([0, 100]); % 随机生成dx，范围0-100,要求是integer
-dy_rand = randi([0, 100]); % 随机生成dy，范围0-100
+dx_rand = randi([0, 1000]); % 随机生成dx，范围0-100,要求是integer
+dy_rand = randi([0, 1000]); % 随机生成dy，范围0-100
 
 fprintf('随机生成的dx: %d, dy: %d\n', dx_rand, dy_rand); % 修改格式化输出为整数
-
-% Add random shifts to the pixel coordinates
-points_pix(:,1) = points_pix(:,1) - dx_rand;  % Add dx_rand to X coordinates (first column)
-points_pix(:,2) = points_pix(:,2) - dy_rand;  % Add dy_rand to Y coordinates (second column)
 
 %% 转换像素坐标到相机坐标系下
 % ================== 参数设置 ==================
 % 标定参数（根据实际标定结果修改）
 pixel_per_um_x = 820;      % X方向：1像素=0.82微米 (nm/px)
 pixel_per_um_y = 820;      % Y方向：同上
-dx = 800 - dx_rand;                   % 主点偏移x (px)
-dy = 600 - dy_rand;                   % 主点偏移y (px)
+dx = 800 + dx_rand;                   % 主点偏移x (px)
+dy = 600 + dy_rand;                   % 主点偏移y (px)
 Zf = 10000000;                 % 设定物距 (nm)
 
 % ================== 构建转换矩阵M ==================
@@ -126,7 +122,7 @@ T_final = [cos_a,  -sin_a,   0,   tx_optimized;
 disp('Final transformation matrix T (Camera Frame -> World Frame):');
 disp(T_final);
 
-% 计算最终的估计世界坐标
+%% 计算最终的估计世界坐标
 points_world_estimated_final_homo = T_final * points_cam_homogeneous;
 points_world_estimated_final = points_world_estimated_final_homo(1:3, :)'; % 转换回 nx3
 
@@ -145,92 +141,16 @@ for i = 1:n
 end
 fprintf('----------------------------------------\n');
 
-%% ================== 可视化验证 ==================
-% fprintf('\n正在生成可视化结果...\n');
-% hFig = figure; % 创建一个新的图形窗口，并获取句柄
-% set(hFig, 'Color', 'w'); % 设置图形背景为白色
-% 
-% hold on; % 允许在同一图形上绘制多个数据集
-% 
-% % 绘制真实的（来自Excel的）世界坐标点 (蓝色圆圈)
-% scatter3(points_world(:,1), points_world(:,2), points_world(:,3), ...
-%          60, 'b', 'o', 'filled', ... % 填充蓝色圆圈，大小60
-%          'MarkerEdgeColor', 'k', 'LineWidth', 0.5, ... % 添加细黑色边框
-%          'DisplayName', '真实世界坐标');
-% 
-% % 绘制优化后计算得到的估计世界坐标点 (红色叉号)
-% scatter3(points_world_estimated_final(:,1), points_world_estimated_final(:,2), points_world_estimated_final(:,3), ...
-%          60, 'r', 'x', 'LineWidth', 1.5, ... % 红色叉号，大小60，线宽1.5
-%          'DisplayName', '估计世界坐标');
-% 
-% % (可选) 绘制连接对应点的误差线
-% % for i = 1:n
-% %     plot3([points_world(i,1), points_world_estimated_final(i,1)], ...
-% %           [points_world(i,2), points_world_estimated_final(i,2)], ...
-% %           [points_world(i,3), points_world_estimated_final(i,3)], ...
-% %           'k:', 'LineWidth', 0.5, 'HandleVisibility','off'); % 细黑色虚线
-% % end
-% 
-% hold off; % 停止在当前图形上继续绘制
-% 
-% % --- 图形风格调整 ---
-% ax = gca; % 获取当前坐标轴句柄
-% 
-% % 设置字体、字号 (可根据期刊要求调整)
-% % ax.FontName = 'Times New Roman';
-% ax.FontSize = 12; % 坐标轴刻度字号
-% ax.Title.FontSize = 14; % 标题字号
-% ax.Title.FontWeight = 'bold'; % 标题加粗
-% ax.XLabel.FontSize = 12; % X轴标签字号
-% ax.YLabel.FontSize = 12; % Y轴标签字号
-% ax.ZLabel.FontSize = 12; % Z轴标签字号
-% 
-% % 设置坐标轴线宽和刻度
-% ax.LineWidth = 1.0; % 坐标轴线宽
-% ax.Box = 'on';      % 显示完整的坐标轴框
-% ax.TickDir = 'in'; % 刻度线朝内 (更符合某些出版物风格)
-% ax.TickLength = [0.015 0.025]; % 调整刻度线长度
-% 
-% % 添加图形元素
-% xlabel('X 世界坐标 (nm)', 'FontWeight', 'bold'); % 标签加粗
-% ylabel('Y 世界坐标 (nm)', 'FontWeight', 'bold');
-% zlabel('Z 世界坐标 (nm)', 'FontWeight', 'bold');
-% title('真实世界坐标 vs. 优化后估计的世界坐标');
-% 
-% % 图例设置
-% lgd = legend('show', 'Location', 'northeast', 'FontSize', 10); % 显示图例，自动选择最佳位置，设置图例字号
-% lgd.Box = 'on'; % 给图例添加边框
-% 
-% % 网格线设置
-% grid on;
-% ax.GridLineStyle = ':'; % 网格线样式改为点线
-% ax.GridAlpha = 0.6;     % 网格线透明度
-% ax.Layer = 'top';       % 将坐标轴和网格放在数据点之上
-% 
-% % 视图和比例
-% axis equal;     % 设置坐标轴比例相等，以正确显示几何形状
-% view(2);        % 设置为 XY 平面视图 (俯视图)，如果 Z 轴信息重要，可改为 view(3) 或其他角度
-% 
-% fprintf('可视化图形已生成。\n');
-% 
-% % --- 保存为高分辨率 PNG 文件 ---
-% output_filename = 'Calibration_Results_Publication.png';
-% resolution_dpi = 300; % 设置分辨率 (DPI), 300 或 600 常用
-% try
-%     % 使用 print 函数保存，控制分辨率和渲染器
-%     print(hFig, output_filename, '-dpng', sprintf('-r%d', resolution_dpi), '-vector');
-%     % '-painters' 选项通常能提供较好的矢量图形效果，对于包含散点图的 PNG 输出可能更清晰
-%     fprintf('图形已保存为: %s (分辨率: %d DPI)\n', output_filename, resolution_dpi);
-% catch ME_print
-%     fprintf('保存图形时出错: %s\n', ME_print.message);
-%     fprintf('尝试使用默认渲染器保存...\n');
-%     try
-%         print(hFig, output_filename, '-dpng', sprintf('-r%d', resolution_dpi));
-%         fprintf('图形已使用默认渲染器保存为: %s (分辨率: %d DPI)\n', output_filename, resolution_dpi);
-%     catch ME_print_fallback
-%         fprintf('使用默认渲染器保存图形时再次出错: %s\n', ME_print_fallback.message);
-%     end
-% end
+%% 计算T*M
+% 将M转换为4*4
+M = [pixel_per_um_x,    0,              0,  -dx*pixel_per_um_x;
+     0,                 pixel_per_um_y, 0,  -dy*pixel_per_um_y;
+     0,                 0,              1,  Zf;
+     0,                 0,              0,  1]; % 添加齐次坐标分量
+
+T_M = T_final * M; % 计算最终的变换矩阵 T 和 M 的乘积
+disp('Transformation matrix T * M:');
+disp(T_M);
 
 %% ================== 辅助函数 ==================
 % 残差计算函数
