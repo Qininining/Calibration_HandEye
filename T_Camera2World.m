@@ -139,3 +139,15 @@ for i = 1:n
             i, errors(i,1), errors(i,2), errors(i,3), point_error_magnitudes(i));
 end
 fprintf('----------------------------------------\n');
+
+
+%% 计算T*M
+% 将M转换为4*4
+M = [pixel_per_um_x,    0,              0,  -dx*pixel_per_um_x;
+     0,                 pixel_per_um_y, 0,  -dy*pixel_per_um_y;
+     0,                 0,              1,  Zf;
+     0,                 0,              0,  1]; % 添加齐次坐标分量
+
+T_M = T * M; % 计算最终的变换矩阵 T 和 M 的乘积
+disp('Transformation matrix T * M:');
+disp(T_M);
